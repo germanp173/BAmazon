@@ -1,0 +1,25 @@
+{
+  "name": "bamazon",
+  "version": "1.0.0",
+  "description": "An Amazon-like Node store",
+  "main": "bamazonCustomer.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/germanp173/Bamazon.git"
+  },
+  "author": "German Pineda",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/germanp173/Bamazon/issues"
+  },
+  "homepage": "https://github.com/germanp173/Bamazon#readme",
+  "dependencies": {
+    "colors": "^1.3.2",
+    "inquirer": "^6.2.0",
+    "mysql": "^2.16.0",
+    "table": "^5.1.0"
+  }
+}
