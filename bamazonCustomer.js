@@ -1,33 +1,14 @@
 // Import Node libraries.
+var utils = require('./utils');
+var globals = require('./globals');
 var colors = require('colors');
 var inquirer = require('inquirer');
-var mysql = require('mysql');
-var table = require('table');
 
-// Database globals.
-var databaseName = 'bamazon';
-var productsTableName = "products";
-var itemIdCol = "item_id";
-var stockQtyCol = "stock_quantity";
-var productNameCol = "product_name";
 var itemIds = [];
-
-// Create the MySQL database connection.
-var connection = mysql.createConnection({
-    host: 'localhost',
-    user: 'root',
-    password: '',
-    database: databaseName
-});
-
-// Attempt to establish a connection with the database.
-connection.connect(function(error){
-    if (error) throw `Error occurred while connection to "${databaseName}" MySQl database:\n${error}`;
-})
 
 // Start the application.
 console.log("\nWELCOME TO BAMAZON!\n");
-console.log("Here's a list of all available products in the store:\n");
+console.log("Here's a list of all available products in the store:");
 getAllProducts();
 
 function purchasePrompt(){
@@ -55,7 +36,7 @@ function purchasePrompt(){
 
 function unableToProcessPrompt(id, productName, quantityAvailable){
     console.log('\nTrasaction Failed!'.bold.red);
-    console.log(`\nWe don't have enough in stock to meet that order:\nProduct: ${productName} | Quantity In Stock: ${quantityAvailable}\n`);
+    console.log(`\nWe don't have enough in stock to meet that order:\nProduct: ${productName} | Quantity In Stock: ${quantityAvailable}`);
     inquirer.prompt([
         {
             type: 'confirm',
@@ -96,12 +77,12 @@ function keepShoppingPrompt(){
 }
 
 function purchaseProduct(id, quantity){
-    getProductById(id, 
+    utils.getProductById(id, 
         function(err, res){
             if (err) throw err;
             
-            var productName = res[0][productNameCol];
-            var quantityAvailable = res[0][stockQtyCol];
+            var productName = res[0][globals.productNameCol];
+            var quantityAvailable = res[0][globals.stockQtyCol];
             var desiredQuantity = Number(quantity);
             if (quantityAvailable < desiredQuantity){
                 unableToProcessPrompt(id, productName, quantityAvailable);
@@ -112,59 +93,21 @@ function purchaseProduct(id, quantity){
 }
 
 function processTransaction(id, quantity){
-    connection.query(
-        `UPDATE ${productsTableName}
-        SET ${stockQtyCol}=${quantity}
-        WHERE ${itemIdCol}=${id}`,
+    utils.connection.query(
+        `UPDATE ${globals.productsTableName}
+        SET ${globals.stockQtyCol}=${quantity}
+        WHERE ${globals.itemIdCol}=${id}`,
         function(err, res){
             if (err) throw err;
-            console.log('\nTransaction Successfully Processed\n'.bold.green);
+            console.log('\nTransaction Successfully Processed'.bold.green);
             keepShoppingPrompt();
         });
 }
 
-function printProducts(rows){
-    itemIds = [];
-    var output = [];
-    for (let i = 0; i < rows.length; i++) {
-        // For the header row, get the object keys (only need to do this once).
-        if (i == 0){
-            output.push(Object.keys(rows[i]));
-        }
-
-        // Itereate through each row object and extract the values of each field.
-        var row = [];
-        for(var col in rows[i]){
-            row.push(rows[i][col]);
-            if (col === itemIdCol){
-                itemIds.push(String(rows[i][col]));
-            }
-        }
-        output.push(row);
-    }
-
-    // Print rows in a nice table format.
-    console.log(table.table(output));
-}
-
-
-// #### MYSQL Functions #### //
 function getAllProducts(){
-    connection.query(`SELECT * FROM ${productsTableName}`, function(err, res){
+    utils.getAllProducts(function(err, res){
         if (err) throw err;
-
-        printProducts(res);
+        itemIds = utils.printProducts(res);
         purchasePrompt();
     });
-}
-
-function getProductById(id, callback){
-    connection.query(
-        `SELECT * FROM ${productsTableName} WHERE ?`,
-        [
-            {
-                item_id: id
-            }
-        ],
-        callback);
 }
