@@ -20,14 +20,26 @@ exports.getProductById = function(id, callback){
     connection.query(
         `SELECT * FROM ${globals.productsTableName} WHERE ${globals.itemIdCol}=?`,
         [id],
-        callback);
+        callback
+    );
+}
+
+exports.addAProduct = function(product, callback){
+    connection.query(
+        `INSERT INTO ${globals.productsTableName} (${product.fields.join(",")}) VALUES (?)`,
+        [product.values],
+        callback
+    );
+}
+
+exports.extractItemIds = function(rows){
+    return rows.map(row => row[globals.itemIdCol]);
 }
 
 exports.printProducts = function(rows){
-    var itemIds = [];
     var output = [];
     for (let i = 0; i < rows.length; i++) {
-        // For the header row, get the object keys (only need to do this once).
+        // Extract the header fields by grabbing the object keys of the first row (only needed once).
         if (i == 0){
             output.push(Object.keys(rows[i]));
         }
@@ -36,14 +48,10 @@ exports.printProducts = function(rows){
         var row = [];
         for(var col in rows[i]){
             row.push(rows[i][col]);
-            if (col === globals.itemIdCol){
-                itemIds.push(String(rows[i][col]));
-            }
         }
         output.push(row);
     }
-
+    
     // Print rows in a nice table format.
     console.log('\n' + table.table(output) + '\n');
-    return itemIds;
 }

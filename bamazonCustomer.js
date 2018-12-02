@@ -18,7 +18,7 @@ function purchasePrompt(){
             name: 'id',
             message: "What's the Item ID of the product you'd like to purchase?",
             validate: function(id){
-                return itemIds.includes(id) ? true : `Item ID '${id}' not found in the store.`;
+                return itemIds.includes(Number(id)) ? true : `Item ID '${id}' not found in the store.`;
             }
         },
         {
@@ -106,8 +106,9 @@ function processTransaction(id, quantity){
 
 function getAllProducts(){
     utils.getAllProducts(function(err, res){
-        if (err) throw err;
-        itemIds = utils.printProducts(res);
+        if (err) throw err;``
+        itemIds = utils.extractItemIds(res);
+        utils.printProducts(res);
         purchasePrompt();
     });
 }
